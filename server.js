@@ -273,10 +273,19 @@ app.get('/health', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 AI Marketing Tutor Server is running on port ${PORT}`);
   console.log(`🌐 Web Chat: http://localhost:${PORT}`);
   console.log(`📝 Webhook URL: http://localhost:${PORT}/webhook`);
   console.log(`💚 Health check: http://localhost:${PORT}/health`);
+});
+
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
 });
 
