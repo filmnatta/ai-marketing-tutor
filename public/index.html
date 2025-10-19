@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Marketing Tutor - ระบบช่วยสอนการตลาด</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            height: 600px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #764ba2;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            background: #f8f9fa;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-image {
+            max-width: 70%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .typing {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            width: fit-content;
+        }
+
+        .typing span {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-10px);
+            }
+        }
+
+        .input-area {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-area input:focus {
+            border-color: #667eea;
+        }
+
+        .input-area button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .input-area button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .input-area button:active {
+            transform: translateY(0);
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #f8f9fa;
+            border-left: 1px solid #e0e0e0;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sidebar h3 {
+            font-size: 14px;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .quick-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .quick-btn {
+            padding: 10px 12px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: left;
+            transition: all 0.2s;
+            color: #333;
+        }
+
+        .quick-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .quick-btn.command {
+            background: #f0f4ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .quick-btn.command:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .status {
+            padding: 8px 12px;
+            background: #e8f5e9;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #2e7d32;
+            text-align: center;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status.loading {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+                max-height: 90vh;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid #e0e0e0;
+                max-height: 200px;
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .message-image {
+                max-width: 85%;
+            }
+        }
+
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chat-container">
+            <div class="header">
+                <h1>🎓 AI Marketing Tutor</h1>
+                <p>ระบบช่วยสอนการตลาด</p>
+            </div>
+
+            <div class="messages" id="messages">
+                <div class="message bot">
+                    <div class="message-content">
+                        👋 สวัสดี! ยินดีต้อนรับสู่ AI Marketing Tutor<br><br>
+                        ฉันสามารถช่วยให้คุณเรียนรู้เกี่ยวกับการตลาดได้ เช่น 4P, STP, SWOT, Brand, Customer Journey และอื่นๆ<br><br>
+                        พิมพ์ <strong>/help</strong> เพื่อดูคำสั่งทั้งหมด หรือถามคำถามเกี่ยวกับการตลาดได้เลย!
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="พิมพ์คำถามเกี่ยวกับการตลาด..." 
+                    autocomplete="off"
+                >
+                <button onclick="sendMessage()">ส่ง</button>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div>
+                <h3>📚 หัวข้อยอดนิยม</h3>
+                <div class="quick-buttons">
+                    <button class="quick-btn" onclick="sendMessage('4P ของการตลาดคืออะไร?')">4P Marketing Mix</button>
+                    <button class="quick-btn" onclick="sendMessage('STP Strategy คืออะไร?')">STP Strategy</button>
+                    <button class="quick-btn" onclick="sendMessage('SWOT Analysis คืออะไร?')">SWOT Analysis</button>
+                    <button class="quick-btn" onclick="sendMessage('Brand Management คืออะไร?')">Brand Management</button>
+                    <button class="quick-btn" onclick="sendMessage('Customer Journey คืออะไร?')">Customer Journey</button>
+                </div>
+            </div>
+
+            <div>
+                <h3>⚡ คำสั่ง</h3>
+                <div class="quick-buttons">
+                    <button class="quick-btn command" onclick="sendMessage('/help')">/help</button>
+                    <button class="quick-btn command" onclick="sendMessage('/generate-image 4P')">/generate-image</button>
+                    <button class="quick-btn command" onclick="sendMessage('/reset')">/reset</button>
+                </div>
+            </div>
+
+            <div class="info-box">
+                💡 <strong>เคล็ดลับ:</strong> ถามคำถามชัดเจน ขอตัวอย่าง และใช้คำสั่ง /generate-image เพื่อสร้างแผนภาพ
+            </div>
+
+            <div class="status" id="status">✅ พร้อมใช้งาน</div>
+        </div>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const statusElement = document.getElementById('status');
+
+        // ฟังก์ชันส่งข้อความ
+        async function sendMessage(text = null) {
+            const message = text || messageInput.value.trim();
+            
+            if (!message) return;
+
+            // เพิ่มข้อความของผู้ใช้
+            addMessage(message, 'user');
+            messageInput.value = '';
+
+            // แสดง typing indicator
+            showTypingIndicator();
+
+            try {
+                // ส่งข้อความไปยังเซิร์ฟเวอร์
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // ลบ typing indicator
+                removeTypingIndicator();
+
+                // เพิ่มข้อความของ Bot
+                if (data.text) {
+                    addMessage(data.text, 'bot');
+                }
+
+                if (data.image) {
+                    addImageMessage(data.image, 'bot');
+                }
+
+                updateStatus('✅ พร้อมใช้งาน', false);
+            } catch (error) {
+                removeTypingIndicator();
+                console.error('Error:', error);
+                addMessage('ขออภัย เกิดข้อผิดพลาด: ' + error.message, 'bot');
+                updateStatus('❌ เกิดข้อผิดพลาด', true);
+            }
+        }
+
+        // ฟังก์ชันเพิ่มข้อความ
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = text;
+            
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll ไปที่ข้อความล่าสุด
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // ฟังก์ชันเพิ่มข้อความรูปภาพ
+        function addImageMessage(imageUrl, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const imageDiv = document.createElement('div');
+            imageDiv.className = 'message-image';
+            
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = 'Generated image';
+            
+            imageDiv.appendChild(img);
+            messageDiv.appendChild(imageDiv);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll ไปที่ข้อความล่าสุด
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // ฟังก์ชันแสดง typing indicator
+        function showTypingIndicator() {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.id = 'typing-indicator';
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing';
+            typingDiv.innerHTML = '<span></span><span></span><span></span>';
+            
+            messageDiv.appendChild(typingDiv);
+            messagesContainer.appendChild(messageDiv);
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // ฟังก์ชันลบ typing indicator
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // ฟังก์ชันอัปเดตสถานะ
+        function updateStatus(text, isError = false) {
+            statusElement.textContent = text;
+            statusElement.className = isError ? 'status error' : 'status';
+        }
+
+        // ส่งข้อความเมื่อกด Enter
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // ตรวจสอบการเชื่อมต่อเซิร์ฟเวอร์
+        async function checkServerConnection() {
+            try {
+                const response = await fetch('/health');
+                if (response.ok) {
+                    updateStatus('✅ พร้อมใช้งาน', false);
+                } else {
+                    updateStatus('⚠️ เซิร์ฟเวอร์ไม่ตอบสนอง', true);
+                }
+            } catch (error) {
+                updateStatus('❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์', true);
+            }
+        }
+
+        // ตรวจสอบการเชื่อมต่อเมื่อโหลดหน้า
+        window.addEventListener('load', checkServerConnection);
+
+        // ตรวจสอบการเชื่อมต่อทุก 30 วินาที
+        setInterval(checkServerConnection, 30000);
+    </script>
+</body>
+</html>
+
